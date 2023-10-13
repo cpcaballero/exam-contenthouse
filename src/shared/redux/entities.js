@@ -8,6 +8,7 @@ const UPDATE_ENTITY = 'contenthouse/entity/UPDATE_ENTITY'
 const initialState = {
   _updates: {},
   users: {},
+  companies: {},
 }
 
 export function updateEntities(payload, options = {}){

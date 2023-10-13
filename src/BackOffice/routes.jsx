@@ -10,6 +10,8 @@ import NotFound from '@pages/Page404'
 import Users from './packs/Users'
 import User from './packs/User'
 
+import Companies from './packs/Companies'
+
 export default function Router(){
   return useRoutes([
     {
@@ -20,7 +22,7 @@ export default function Router(){
         { path: 'users', element: <Users /> },
         { path: 'users/new', element: <User isNew /> },
         { path: 'users/:userId', element: <User /> },
-        { path: 'companies', element: <Users /> },
+        { path: 'companies', element: <Companies /> },
         { path: 'companies/new', element: <User isNew /> },
         { path: 'companies/:companyId', element: <User /> },
       ],
