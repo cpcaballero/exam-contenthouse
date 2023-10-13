@@ -20,6 +20,9 @@ export default function Router(){
         { path: 'users', element: <Users /> },
         { path: 'users/new', element: <User isNew /> },
         { path: 'users/:userId', element: <User /> },
+        { path: 'companies', element: <Users /> },
+        { path: 'companies/new', element: <User isNew /> },
+        { path: 'companies/:companyId', element: <User /> },
       ],
     },
     {
