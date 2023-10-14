@@ -12,7 +12,7 @@ import {
 
 import useReduxAction from '@hooks/useReduxAction'
 import useSetState from '@hooks/useSetState'
-import useUser from '@hooks/useUser'
+import useCompany from '@hooks/useCompany'
 
 import Iconify from '@components/Iconify'
 import Label from '@components/Label'
@@ -22,14 +22,12 @@ import SearchNotFound from '@components/SearchNotFound'
 
 import PageContext from '@contexts/pageContext'
 
-import { UserListHead, UserListToolbar, UserMoreMenu } from './components'
+import { CompanyListHead, CompanyListToolbar, CompanyMoreMenu } from './components'
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
-  { id: 'company', label: 'Company', alignRight: false },
-  { id: 'role', label: 'Role', alignRight: false },
-  { id: 'verified', label: 'Verified', alignRight: false },
-  { id: 'status', label: 'Status', alignRight: false },
+  { id: 'description', label: 'Description', alignRight: false },
+  { id: 'vip', label: 'Vip?', alignRight: false },
   { id: '' },
 ]
 
@@ -50,6 +48,7 @@ function getComparator(order, orderBy){
 }
 
 function applySortFilter(array, comparator, query){
+  console.log(array)
   const stabilizedThis = array.map((el, index) => [el, index])
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0])
@@ -57,7 +56,7 @@ function applySortFilter(array, comparator, query){
     return a[1] - b[1]
   })
   if (query){
-    return filter(array, _user => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1)
+    return filter(array, _company => _company.name.toLowerCase().indexOf(query.toLowerCase()) !== -1)
   }
   return stabilizedThis.map(el => el[0])
 }
@@ -71,30 +70,31 @@ const defaultState = {
   selected: [],
 }
 
-function Users(){
+function Companies(){
   const [state, setState] = useSetState(defaultState)
   const { filterName, order, orderBy, page, rowsPerPage, selected } = state
 
-  useReduxAction('users', 'loadUsers', {}, [], {
+  useReduxAction('companies', 'loadCompanies', {}, [], {
     shouldPerformFn: (entityReducer) => {
       const { errors, loaded, loading } = entityReducer
+      console.log(errors)
       return !loaded && !loading && !errors.length
     },
   })
 
   const entities = useSelector(reduxState => reduxState.entities)
-  const { users } = entities
+  const { companies } = entities
 
   const {
     callbacks: {
-      deleteUser: deleteFn,
+      deleteCompany: deleteFn,
     },
-  } = useUser()
+  } = useCompany()
 
   const pageContext = {
     callbacks: {
-      deleteUser: (user) => {
-        deleteFn(user).then(({ success, errors }) => {
+      deleteCompany: (company) => {
+        deleteFn(company).then(({ success, errors }) => {
           if (!success && errors){
             console.log('failed')
           }
@@ -113,7 +113,7 @@ function Users(){
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked){
-      const newSelecteds = Object.values(users).map(n => n.name)
+      const newSelecteds = Object.values(companies).map(n => n.name)
       setState({ selected: newSelecteds })
       return
     }
@@ -150,43 +150,43 @@ function Users(){
     setState({ filterName: event.target.value })
   }
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - Object.values(users).length) : 0
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - Object.values(companies).length) : 0
 
-  const filteredUsers = applySortFilter(Object.values(users), getComparator(order, orderBy), filterName)
-  console.log(filteredUsers)
-  const isUserNotFound = filteredUsers.length === 0
+  const filteredCompanies = applySortFilter(Object.values(companies), getComparator(order, orderBy), filterName)
+
+  const isCompanyNotFound = filteredCompanies.length === 0
 
   return (
     <PageContext.Provider value={pageContext}>
-      <Page title="Users">
+      <Page title="Companies">
         <Container>
           <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
             <Typography variant="h4" gutterBottom>
-              User
+              Company
             </Typography>
-            <Button variant="contained" component={RouterLink} to="/dashboard/users/new" startIcon={<Iconify icon="eva:plus-fill" />}>
-              Create User
+            <Button variant="contained" component={RouterLink} to="/dashboard/companies/new" startIcon={<Iconify icon="eva:plus-fill" />}>
+              Create Company
             </Button>
           </Stack>
 
           <Card>
-            <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
+            <CompanyListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
 
             <Scrollbar>
               <TableContainer sx={{ minWidth: 800 }}>
                 <Table>
-                  <UserListHead
+                  <CompanyListHead
                     order={order}
                     orderBy={orderBy}
                     headLabel={TABLE_HEAD}
-                    rowCount={Object.values(users).length}
+                    rowCount={Object.values(companies).length}
                     numSelected={selected.length}
                     onRequestSort={handleRequestSort}
                     onSelectAllClick={handleSelectAllClick}
                   />
                   <TableBody>
-                    {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                      const { id, name, role, status, company, avatarUrl, verified } = row
+                    {filteredCompanies.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                      const { id, name, description, vip } = row
                       const isItemSelected = selected.indexOf(name) !== -1
 
                       return (
@@ -203,38 +203,30 @@ function Users(){
                           </TableCell>
                           <TableCell component="th" scope="row" padding="none">
                             <Stack direction="row" alignItems="center" spacing={2}>
-                              <Avatar alt={name} src={avatarUrl} />
                               <Typography variant="subtitle2" noWrap>
                                 {name}
                               </Typography>
                             </Stack>
                           </TableCell>
-                          <TableCell align="left">{company}</TableCell>
-                          <TableCell align="left">{role}</TableCell>
-                          <TableCell align="left">{verified ? 'Yes' : 'No'}</TableCell>
-                          <TableCell align="left">
-                            <Label variant="ghost" color={(status === 'banned' && 'error') || 'success'}>
-                              {sentenceCase(status)}
-                            </Label>
-                          </TableCell>
-
+                          <TableCell align="left">{description}</TableCell>
+                          <TableCell align="left">{vip ? 'Yes' : 'No'}</TableCell>
                           <TableCell align="right">
-                            <UserMoreMenu user={row} />
+                            <CompanyMoreMenu company={row} />
                           </TableCell>
                         </TableRow>
                       )
                     })}
                     {emptyRows > 0 && (
                       <TableRow style={{ height: 53 * emptyRows }}>
-                        <TableCell colSpan={6} />
+                        <TableCell colSpan={4} />
                       </TableRow>
                     )}
                   </TableBody>
 
-                  {isUserNotFound && (
+                  {isCompanyNotFound && (
                     <TableBody>
                       <TableRow>
-                        <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                        <TableCell align="center" colSpan={4} sx={{ py: 3 }}>
                           <SearchNotFound searchQuery={filterName} />
                         </TableCell>
                       </TableRow>
@@ -247,7 +239,7 @@ function Users(){
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={Object.values(users).length}
+              count={Object.values(companies).length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
@@ -260,4 +252,4 @@ function Users(){
   )
 }
 
-export default Users
+export default Companies
