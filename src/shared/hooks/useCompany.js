@@ -23,21 +23,21 @@ function updateCompany(companyParams, dispatch){
   return dispatch(updateFn(companyParams))
 }
 
-function deleteCompany(user, dispatch){
+function deleteCompany(company, dispatch){
   const { deleteCompany: deleteFn } = companyActions
 
-  return dispatch(deleteFn(user))
+  return dispatch(deleteFn(company))
 }
 
-const useCompany = (initUser = {}) => {
-    const { entity: user } = useLatestEntity(initUser, 'users')
+const useCompany = (initCompany = {}) => {
+    const { entity: company } = useLatestEntity(initCompany, 'companies')
 
     const dispatch = useThunkDispatch()
 
     const { creating, deleting, loading, updating } = useSelector(reduxState => reduxState.users)
 
     return {
-      user,
+      company,
       callbacks: {
         updateCompany: companyParams => updateCompany(companyParams, dispatch),
         createCompany: companyParams => createCompany(companyParams, dispatch),

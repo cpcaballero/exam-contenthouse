@@ -175,7 +175,7 @@ export function updateCompany(company){
 
       reject(new Error('No data'))
     }).then(({ data }) => {
-      const normalizedJson = normalize(data, Schemas.USER)
+      const normalizedJson = normalize(data, Schemas.COMPANY)
       dispatch(updateEntities(normalizedJson))
       dispatch(updateSuccess())
 
@@ -191,7 +191,7 @@ export function updateCompany(company){
   }
 }
 
-export function deleteUser(company){
+export function deleteCompany(company){
   return (dispatch) => {
     dispatch(deleteRequest())
 
